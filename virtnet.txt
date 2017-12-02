@@ -1,3 +1,7 @@
+World - (em1)-[Host]-(virbr0:192.168.122.1/24)
+Internal Net - (ens9:192.168.240.1/24)[VM/gateway](eth0:192.168.122.30/24)
+.. .. .. ..  - (eth0:192.168.240.20/24)[VM/client]
+
 virt-manager
   Edit
     Connection Details
