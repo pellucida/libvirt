@@ -1,0 +1,56 @@
+virt-manager
+  Edit
+    Connection Details
+      Virtual Networks
+	+ (Add)
+          Network Name: [ Solo ] !! Example name
+    Create virtual network
+    !! Uncheck !!
+    [] Enable IPv4 network address space definition 
+    =>
+    !! Don't check !!
+    [] Enable IPv6 network address space definition 
+    =>
+    (*) Isolated virtual network
+    => [Finish]	!! Firewalld has to be running else will fail. !!
+
+If this is the first network then virbr1 and virbr1-nic will have
+been created but virbr1 *won't* have an IP address.
+
+!! If Enable IPv4... was left checked, virbr1 would have an address
+[by default 192.168.100.1/24] and this is *the* [routing] problem. !!
+
+After creating the gateway VM create (Virtual Machine Details) as
+second NIC and place it on
+"Virtual network 'Solo':Isolated network, internal and host routing only"
+
+Within the gateway VM assign a suitable static IP address 
+eg 192.168.240.1/24
+Enable ip_forwarding and check firewall rules.
+The NIC on the host side should have a static address too
+eg 192.168.122.30/24
+with the default router 192.168.122.1 !!why not just specify the dev? !! 
+
+After creating the internal VM, place (Virtual Machine Details) the NIC on
+"Virtual network 'Solo':Isolated network, internal and host routing only"
+
+Within the VM configure a suitable static IP address
+eg 192.168.240.20/24  and the gateway ie 192.168.240.1.
+
+Now the host system needs a route to the internal subnet 192.168.240.0/24
+which will be through VM/gateway's host side NIC ie 192.168.122.30
+!!Note the virbr0 address 192.168.122.1 doesn't work. Why?!!
+(A static address on VM/gateway host side NIC is desirable so dhcp 
+doesn't change this address and invalidate this route.)
+
+[net-tools]  route add -net 192.168.240.0/24 gw 192.168.122.30 dev virbr0
+[iproute2] ip route add to 192.168.240.0/24 via 192.168.122.30 dev virbr0
+
+A SNAT or MASQUERADE rule is needed in nat/POSTROUTING
+eg
+  iptables -t nat -A POSTROUTING -o em1 -j MASQUERADE -s 192.168.240.0/24 
+
+(em1 is the host interface onto the world.)
+
+I find it useful to remember that nat/POSTROUTING is almost the last thing
+to touch a packet before it hits the wire.
