@@ -1,6 +1,31 @@
-World - (em1)-[Host]-(virbr0:192.168.122.1/24)
-Internal Net - (ens9:192.168.240.1/24)[VM/gateway](eth0:192.168.122.30/24)
-.. .. .. ..  - (eth0:192.168.240.20/24)[VM/client]
+Topology
+         World
+           |
+         (em1)
+      [         ]
+      [ VM Host ]
+      [         ]
+         (virbr0)
+     192.168.122.1/24
+            |
+       -----+-----
+            |
+     192.168.122.30/24
+         (ens9)
+      [         ]
+      [   GW    ]
+      [         ]
+         (eth0)
+     192.168.240.1/24
+            |
+    Solo ---+-----
+            |
+
+     192.168.240.20/24
+         (eth0)
+      [         ]
+      [  Client ]
+      [         ]
 
 virt-manager
   Edit
@@ -43,7 +68,9 @@ eg 192.168.240.20/24  and the gateway ie 192.168.240.1.
 
 Now the host system needs a route to the internal subnet 192.168.240.0/24
 which will be through VM/gateway's host side NIC ie 192.168.122.30
+
 !!Note the virbr0 address 192.168.122.1 doesn't work. Why?!!
+
 (A static address on VM/gateway host side NIC is desirable so dhcp 
 doesn't change this address and invalidate this route.)
 
